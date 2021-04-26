@@ -31,87 +31,102 @@ struct Home: View {
     @State private var startOffset: CGFloat = 0
     
     var body: some View {
-        // 1.
-        ScrollView(.vertical, showsIndicators: false, content: {
-            VStack(spacing: 20) {
-                ForEach(1...20, id:\.self) { i in
-                    // 샘플 row 생성
-                    HStack(spacing: 10) {
-                        Circle()
-                            .fill(Color.gray.opacity(0.5))
-                            .frame(width: 70, height: 70)
-                        VStack(alignment:.leading, spacing: 5) {
-                            RoundedRectangle(cornerRadius: 5)
+        
+        //8.
+        // Top 스크롤 함수
+        // scrollview Reader 사용
+        ScrollViewReader { proxyReader in
+            // 1.
+            ScrollView(.vertical, showsIndicators: false, content: {
+                VStack(spacing: 20) {
+                    ForEach(1...20, id:\.self) { i in
+                        // 샘플 row 생성
+                        HStack(spacing: 10) {
+                            Circle()
                                 .fill(Color.gray.opacity(0.5))
-                                .frame(height: 20)
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(Color.gray.opacity(0.5))
-                                .frame(height: 20)
-                                .padding(.trailing, 150)
+                                .frame(width: 70, height: 70)
+                            VStack(alignment:.leading, spacing: 5) {
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(Color.gray.opacity(0.5))
+                                    .frame(height: 20)
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(Color.gray.opacity(0.5))
+                                    .frame(height: 20)
+                                    .padding(.trailing, 150)
+                            }
+                            
+                        }
+                    }
+                    
+                }
+                .padding()
+                // 9. 스크롤위치를 지정해줄 id 부여 해줘야함
+                .id("SCROLL_TO_TOP")
+                
+                // 2.
+                //ScrollView offset 가져오기
+                .overlay(
+                    
+                    // 4.
+                    //GeometrtReader를 사용하여 ScrollView offset 값을 가져옴
+                    GeometryReader{ proxy -> Color in
+                        
+                        //6.
+                        DispatchQueue.main.async {
+                            //startOffset을 정해줌
+                            if startOffset == 0 {
+                                self.startOffset = proxy.frame(in: .global).minY
+                            }
+                            let offset = proxy.frame(in: .global).minY
+                            self.ScrollViewOffset = offset - startOffset
+                            
+                            print(self.ScrollViewOffset)
                         }
                         
+                        
+                        return Color.clear
                     }
-                }
-                
-            }
-            .padding()
-            // 2.
-            //ScrollView offset 가져오기
+                    .frame(width: 0, height: 0)
+                    ,alignment: .top
+                )
+            })
+            // 7.
+            // 만약 offset이 450보다 작으면 아래쪽에 버튼을 나타나게함
             .overlay(
                 
-                // 4.
-                //GeometrtReader를 사용하여 ScrollView offset 값을 가져옴
-                GeometryReader{ proxy -> Color in
-                    
-                    //6.
-                    DispatchQueue.main.async {
-                        //startOffset을 정해줌
-                        if startOffset == 0 {
-                            self.startOffset = proxy.frame(in: .global).minY
-                        }
-                        let offset = proxy.frame(in: .global).minY
-                        self.ScrollViewOffset = offset - startOffset
-                        
-                        print(self.ScrollViewOffset)
+                // 7-1
+                Button(action: {
+                    // 10. 애니메이션과 함께 스크롤 탑 액션 지정
+                    withAnimation(.default) {
+                        proxyReader.scrollTo("SCROLL_TO_TOP", anchor: .top)
                     }
                     
-                    
-                    return Color.clear
-                }
-                .frame(width: 0, height: 0)
-                ,alignment: .top
-            )
-        })
-        // 7.
-        // 만약 offset이 450보다 작으면 아래쪽에 버튼을 나타나게함
-        .overlay(
-            
-            // 7-1
-            Button(action: {}, label: {
-                Image(systemName: "arrow.up")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color(#colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1)))
-                    .clipShape(Circle())
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 5, y: 5)
-            })
-            // 7-3
-            .padding(.trailing)
-            //베젤이 있는 기종이면 패딩 12, 아니라면 0
-            .padding(.bottom,getSafeArea().bottom == 0 ? 12 : 0)
-           
-            //이렇게도 사용가능
-            //            .padding(.bottom, UIApplication.shared.windows.first?.safeAreaInsets.bottom == 0 ? 12 : 0)
-            
-            // 7-4
-            // 만약 scrollViewOffset이 450보다 작으면 투명도를 적용
-            .opacity(-ScrollViewOffset > 450 ? 1 : 0)
-            .animation(.easeIn)
-            
-            // 버튼을 오른쪽 하단에 고정
-            ,alignment: .bottomTrailing
+                }, label: {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color(#colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1)))
+                        .clipShape(Circle())
+                        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 5, y: 5)
+                })
+                // 7-3
+                .padding(.trailing)
+                //베젤이 있는 기종이면 패딩 12, 아니라면 0
+                .padding(.bottom,getSafeArea().bottom == 0 ? 12 : 0)
+               
+                //이렇게도 사용가능
+                //            .padding(.bottom, UIApplication.shared.windows.first?.safeAreaInsets.bottom == 0 ? 12 : 0)
+                
+                // 7-4
+                // 만약 scrollViewOffset이 450보다 작으면 투명도를 적용
+                .opacity(-ScrollViewOffset > 450 ? 1 : 0)
+                .animation(.easeIn)
+                
+                // 버튼을 오른쪽 하단에 고정
+                ,alignment: .bottomTrailing
         )
+        }
     }
 }
 
