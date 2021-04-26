@@ -26,6 +26,10 @@ struct Home: View {
     // 3.
     @State private var ScrollViewOffset: CGFloat = 0
     
+    // 5.
+    // 정확한 오프셋을 얻기 위해 startOffset을 가져옴
+    @State private var startOffset: CGFloat = 0
+    
     var body: some View {
         // 1.
         ScrollView(.vertical, showsIndicators: false, content: {
@@ -59,9 +63,20 @@ struct Home: View {
                 //GeometrtReader를 사용하여 ScrollView offset 값을 가져옴
                 GeometryReader{ proxy -> Color in
                     
-                    let offset = proxy.frame(in: .global).minY
+                    //6.
+                    DispatchQueue.main.async {
+                        //startOffset을 정해줌
+                        if startOffset == 0 {
+                            self.startOffset = proxy.frame(in: .global).minY
+                        }
+                        let offset = proxy.frame(in: .global).minY
+                        self.ScrollViewOffset = offset - startOffset
+                        
+                        print(self.ScrollViewOffset)
+                    }
                     
-                    print(offset)
+                    
+//                    print(offset)
                     
                     return Color.clear
                 }
