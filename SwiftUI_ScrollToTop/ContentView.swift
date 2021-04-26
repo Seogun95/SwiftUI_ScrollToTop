@@ -16,9 +16,14 @@ struct ContentView: View {
     }
 }
 
+// 베젤없는 기종과 있는 기종 비교를 위한 프리뷰 설정
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
+        ForEach(["iPhone 12 Pro", "iPhone 8"], id: \.self) {
         ContentView()
+            .previewDevice(PreviewDevice(rawValue: $0))
+            .previewDisplayName($0)
+        }
     }
 }
 
